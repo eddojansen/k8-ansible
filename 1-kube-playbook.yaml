@@ -1,0 +1,86 @@
+- hosts: all
+  vars_files:
+    - vars/quobyte.yaml
+  tasks:
+  - name: Add EPEL repository
+    yum_repository:
+      name: epel
+      description: EPEL YUM repo
+      baseurl: https://download.fedoraproject.org/pub/epel/$releasever/$basearch/
+  - name: Add Kubernetes repository
+    yum_repository:
+      name: Kubernetes
+      description: Kubernetes YUM repo
+      baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+  - name: Install packages
+    yum:
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+      - ca-certificates
+      - curl
+      - docker
+      - iptables-services
+  - name: Remove swapfile from /etc/fstab
+    mount:
+      name: "{{ item }}"
+      fstype: swap
+      state: absent
+    with_items:
+      - swap
+      - none
+  - name: Disable swap
+    command: swapoff -a
+    when: ansible_swaptotal_mb > 0
+  - name: Enable br_netfilter
+    shell:
+      cmd: modprobe br_netfilter
+  - name: Install Kubernetes binaries
+    yum: 
+      name: "{{ packages }}"
+      state: present
+    vars:
+      packages:
+        - kubelet-1.16.0 
+        - kubeadm-1.16.0 
+        - kubectl-1.16.0
+  - name: Start and enable docker 
+    service:
+      name: docker
+      state: started
+      enabled: yes
+  - name: Start and enable kubelet 
+    service:
+      name: kubelet
+      state: started
+      enabled: yes
+- hosts: master
+  tasks:
+  - name: Initialize the Kubernetes cluster using kubeadm
+    command: kubeadm init --node-name kube-node1 --pod-network-cidr=192.168.0.0/16
+  - name: Setup kubeconfig
+    command: "{{ item }}"
+    with_items:
+     - mkdir -p /root/.kube
+     - cp -i /etc/kubernetes/admin.conf /root/.kube/config
+     - chown root:root /root/.kube/config
+  - name: Copy calico.yaml
+    copy:
+       src: templates/calico.yaml
+       dest: /tmp/
+  - name: Install calico pod network
+    command: kubectl apply -f /tmp/calico.yaml
+  - name: Generate join command
+    command: kubeadm token create --print-join-command
+    register: join_command
+  - name: Copy join command to local file
+    local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
+- hosts: slaves
+  tasks:
+  - pause: seconds=60
+  - name: Copy the join command to server location
+    copy: src=join-command dest=/tmp/join-command.sh mode=0777
+  - name: Join the node to cluster
+    command: sh /tmp/join-command.sh
