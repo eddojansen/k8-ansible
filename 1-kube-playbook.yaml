@@ -72,6 +72,8 @@
        dest: /tmp/
   - name: Install calico pod network
     command: kubectl apply -f /tmp/calico.yaml
+  - name: Allow running pods on master
+    command: kubectl taint nodes --all node-role.kubernetes.io/master-
   - name: Generate join command
     command: kubeadm token create --print-join-command
     register: join_command
