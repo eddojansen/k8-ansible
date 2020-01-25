@@ -1,6 +1,4 @@
 - hosts: all
-  vars_files:
-    - vars/quobyte.yaml
   tasks:
   - name: Add EPEL repository
     yum_repository:
@@ -66,6 +64,7 @@
      - mkdir -p /root/.kube
      - cp -i /etc/kubernetes/admin.conf /root/.kube/config
      - chown root:root /root/.kube/config
+    ignore_errors: yes
   - name: Copy calico.yaml
     copy:
        src: templates/calico.yaml
