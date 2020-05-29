@@ -1,9 +1,8 @@
 [all]
-kube-node1
-kube-node2
-
+k8-csi-demo-0-9k0x
+k8-csi-demo-0-xkrj
 [master]
-kube-node1
+k8-csi-demo-0-9k0x
 
 [slaves]
-kube-node2
+k8-csi-demo-0-xkrj

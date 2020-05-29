@@ -1,4 +1,5 @@
 - hosts: all
+  become: yes
   tasks:
   - name: Add EPEL repository
     yum_repository:
@@ -55,9 +56,10 @@
       state: started
       enabled: yes
 - hosts: master
+  become: yes
   tasks:
   - name: Initialize the Kubernetes cluster using kubeadm
-    command: kubeadm init --node-name kube-node1 --pod-network-cidr=192.168.0.0/16
+    command: kubeadm init --node-name k8-csi-demo-0-9k0x  --pod-network-cidr=192.168.0.0/16
   - name: Setup kubeconfig
     command: "{{ item }}"
     with_items:
@@ -79,6 +81,7 @@
   - name: Copy join command to local file
     local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
 - hosts: slaves
+  become: yes
   tasks:
   - pause: seconds=60
   - name: Copy the join command to server location

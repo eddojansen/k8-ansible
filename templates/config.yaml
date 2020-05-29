@@ -4,4 +4,4 @@ metadata:
   name: quobyte-csi-config
   namespace: kube-system
 data:
-  quobyte.apiURL: "http://quobyte-node1:7860" # Example Quobyte API: http://hydrogen.quobyte.com:26801
+  quobyte.apiURL: "http://10.128.0.40:7860" # Example Quobyte API: http://hydrogen.quobyte.com:26801
