@@ -1,8 +1,9 @@
-[all]
-k8-csi-demo-0-9k0x
-k8-csi-demo-0-xkrj
+[all:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
 [master]
-k8-csi-demo-0-9k0x
+ejansen-1
 
 [slaves]
-k8-csi-demo-0-xkrj
+ejansen-2
+

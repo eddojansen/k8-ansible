@@ -11,3 +11,16 @@ rm -rf /etc/cni/
 rm -rf /etc/kubernetes
 rm -rf /var/lib/etcd
 rm -rf /var/etcd/calico-data
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -t nat -F
+iptables -t mangle -F
+iptables -F
+iptables -X
+ip link delete cni0
+ip link delete tunl0
+ip link delete flannel.1
+modprobe -r ipip
+ipvsadm -C
+reboot

@@ -1,12 +1,12 @@
 - hosts: all
-  vars_files:
-    - vars/quobyte.yaml
   become: true
   tasks:
   - name: Initialize the Kubernetes cluster using kubeadm
     command: kubeadm reset
+    ignore_errors: yes
+
   - name: Install packages
-    yum:
+    apt:
       name: "{{ packages }}"
       state: absent
     vars:
@@ -14,8 +14,11 @@
       - ca-certificates
       - curl
       - iptables-services
+    ignore_errors: yes
+
+
   - name: Install Kubernetes binaries
-    yum: 
+    apt: 
       name: "{{ packages }}"
       state: absent
     vars:
@@ -24,3 +27,4 @@
         - kubeadm 
         - kubectl
         - docker
+    ignore_errors: yes
