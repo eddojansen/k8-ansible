@@ -1,59 +1,43 @@
-- hosts: all
+
+- hosts: master
   become: yes
   tasks:
 
+  - name: Initialize the Kubernetes cluster using kubeadm
+    command: kubeadm reset -f
+    ignore_errors: yes
+
+- hosts: all
+  become: yes
+  tasks:
 
   - name: Stop and disable docker
     service:
       name: docker
       state: stopped
       enabled: no
+    ignore_errors: yes
 
   - name: Stop and disable kubelet
     service:
       name: kubelet
       state: stopped
       enabled: no
-
-  - name: Remove packages
-    apt:
-      name: "{{ packages }}"
-      state: absent
-      update_cache: yes
-    vars:
-      packages:
-      - ca-certificates
-      - curl
-      - apt-transport-https
-      - gnupg-agent
-      - vim
-      - software-properties-common
-
-  - name: Remove Docker’s official GPG key
-    apt_key:
-      url: https://download.docker.com/linux/ubuntu/gpg
-      state: absent
+    ignore_errors: yes
 
   - name: Remove Docker Repository
     apt_repository:
       repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
       state: absent
       filename: docker
-      mode: 0600
-      update_cache: yes
-
-  - name: Remove Google official GPG key
-    apt_key:
-      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-      state: absent
+    ignore_errors: yes
 
   - name: Remove Kubernetes Repository
     apt_repository:
       repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
       state: absent
       filename: kubernetes.list
-      mode: 0600
-      update_cache: yes
+    ignore_errors: yes
 
   - sysctl:
       name: net.ipv4.ip_forward
@@ -61,43 +45,44 @@
       sysctl_set: yes
       state: absent
       reload: yes
+    ignore_errors: yes
 
   - name: Remove Kubernetes binaries
-    apt: 
+    apt:
       name: "{{ packages }}"
       state: absent
     vars:
       packages:
-        - docker.io      
+        - docker*
         - kubelet
         - kubeadm
         - kubectl
-
-- hosts: master
-  become: yes
-  tasks:
-  - name: Initialize the Kubernetes cluster using kubeadm
-    command: kubeadm reset
+        - containerd
+    ignore_errors: yes
 
   - name: Remove kubeconfig
     command: "{{ item }}"
     with_items:
      - rm -rf /root/.kube
-     - rm -rf /etc/kubernetes/
+     - rm -rf /etc/kubernetes
      - rm -rf /etc/cni/net.d
      - rm -rf ~/.kube
-     - rm -rf /var/lib/cni/
-     - rm -rf /var/lib/kubelet/*
+     - rm -rf /var/lib/cni
+     - rm -rf /var/lib/kubelet
      - rm -rf /run/flannel
-     - rm -rf /etc/cni/
+     - rm -rf /etc/cni
      - rm -rf /etc/kubernetes
      - rm -rf /var/lib/etcd
      - rm -rf /var/etcd/calico-data
+     - rm -rf /var/lib/dockershim
+     - rm -rf /var/run/kubernetes
      - ip link delete cni0
      - ip link delete tunl0
      - ip link delete flannel.1
      - modprobe -r ipip
      - ipvsadm -C
-     - reboot
     ignore_errors: yes
 
+  - name: Unconditionally reboot the machine with all defaults
+    command: reboot
+    async: yes

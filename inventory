@@ -2,8 +2,9 @@
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
 [master]
-ejansen-1
+ubuntu18-slurm-01
 
-[slaves]
-ejansen-2
-
+[workers]
+ubuntu18-slurm-02
+ubuntu18-slurm-03
+ubuntu18-slurm-04

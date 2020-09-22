@@ -1,1 +1,0 @@
-kubeadm join 10.128.0.5:6443 --token vhzoss.5r2udv0ved1w9ob8     --discovery-token-ca-cert-hash sha256:ed510b7e7ddc37654a5b61c8b2d39a9000a77c40817bcebcb9e3626dde68f3a7 
