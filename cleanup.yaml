@@ -10,6 +10,10 @@
 - hosts: all
   become: yes
   tasks:
+ 
+  - name: unmask docker
+    command:  systemctl unmask docker
+    ignore_errors: yes
 
   - name: Stop and disable docker
     service:
@@ -83,6 +87,6 @@
      - ipvsadm -C
     ignore_errors: yes
 
-  - name: Unconditionally reboot the machine with all defaults
-    command: reboot
-    async: yes
+    #  - name: Unconditionally reboot the machine with all defaults
+    #command: reboot
+    #async: yes
